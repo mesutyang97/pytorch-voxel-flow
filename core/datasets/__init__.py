@@ -1,4 +1,5 @@
-from .ucf_101 import UCF101
-from .ucf_101_test import UCF101Test
+from .kitti import Kitti
+from .kitti_test import KittiTest
 
-all = [UCF101, UCF101Test]
+
+all = [Kitti, KittiTest]

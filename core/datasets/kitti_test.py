@@ -7,12 +7,13 @@ from torch.utils.data import Dataset
 from core.utils import transforms as tf
 
 
-class UCF101(Dataset):
+class KittiTest(Dataset):
 
     def __init__(self, config, istrain=True):
-        super(UCF101, self).__init__()
-        dataset_path = 'data/UCF-101'
-        with open(os.path.join(dataset_path, config.data_list + '.txt')) as f:
+        super(Kitti, self).__init__()
+        dataset_path = '../../boyuan/Datasets/KITTI/training/image_02'
+        dataset_txt_path = 'data/Kitti'
+        with open(os.path.join(dataset_txt_path, config.data_list + '.txt')) as f:
             self.img_list = []
 
             for line in f:

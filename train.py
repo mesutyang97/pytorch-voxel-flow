@@ -32,6 +32,7 @@ def main():
     cudnn.benchmark = True
     cudnn.fastest = True
 
+    print(datasets)
     if hasattr(datasets, cfg.dataset):
         ds = getattr(datasets, cfg.dataset)
     else:
