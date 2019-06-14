@@ -1,3 +1,6 @@
+export CXXFLAGS="-std=c++11"
+export CFLAGS="-std=c99"
+
 echo "Compiling sync_bn_kernel kernels..."
 if [ -f src/cuda/sync_bn_kernel.o ]; then
     rm src/cuda/sync_bn_kernel.o
@@ -7,7 +10,7 @@ if [ -d _ext ]; then
 fi
 
 cd src/cuda
-nvcc -c -o sync_bn_kernel.o sync_bn_kernel.cu \
+nvcc --std=c++11  -c -o sync_bn_kernel.o sync_bn_kernel.cu \
      -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC -arch=sm_52
 
 cd ../../
