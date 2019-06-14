@@ -13,7 +13,7 @@ model = dict(
 device = [0, 1, 2, 3, 4, 5, 6, 7]
 resume = 'outputs/voxelflow_model_best.pth.tar'
 weight = ''
-dataset = 'UCF101'
+dataset = 'Kitti'
 
 # Training strategry
 train = dict(

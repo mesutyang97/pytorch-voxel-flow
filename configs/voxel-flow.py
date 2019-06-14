@@ -13,7 +13,7 @@ model = dict(
 device = [0, 1, 2, 3, 4, 5, 6, 7]
 resume = ''
 weight = ''
-dataset = 'UCF101'
+dataset = 'Kitti'
 
 # Training strategry
 train = dict(
@@ -30,7 +30,7 @@ train = dict(
             # rate_decay_factor=0.1,
             # rate_decay_step=400,
             max_epoch=400)),
-    data_list='train_motion',
+    data_list='train_full',
     step=3,
     syn_type=model['syn_type'],
     crop_size=[256, 256],
@@ -42,7 +42,7 @@ train = dict(
 # Testing strategry
 test = dict(
     batch_size=64,
-    data_list='test_motion',
+    data_list='val_full',
     step=3,
     syn_type=model['syn_type'],
     crop_size=[256, 256],
