@@ -54,7 +54,7 @@ def main():
         drop_last=True)
 
     val_loader = torch.utils.data.DataLoader(
-        datasets.UCF101(cfg.test, False),
+        datasets.Kitti(cfg.test, False),
         batch_size=cfg.test.batch_size,
         shuffle=False,
         num_workers=32,

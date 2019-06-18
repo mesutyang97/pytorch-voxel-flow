@@ -25,7 +25,7 @@ class Kitti(Dataset):
             self.img_list = [i for i in self.img_list for _ in range(10)]
 
         self.istrain = istrain
-        self.img_path = dataset_path
+        self.img_path = '../' + dataset_path
         self.config = config
 
     def __len__(self):
