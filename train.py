@@ -12,8 +12,23 @@ from core.utils.config import Config
 from core.utils.eval import EvalPSNR
 from core.ops.sync_bn import DataParallelwithSyncBN
 
-best_PSNR = 0
+# to save the output
+import cv2
+from core.utils import transforms as tf
 
+
+def save_img(input, target, pred, im_name, input_mean, input_std):
+    print("input size", input.shape)
+    print("target size", target.shape)
+    comparison = np.concatenate((target, pred), axis=1)
+    output = np.concatenate((input, comparison), axis=0)
+    output_norm = tf.normalize(output, -input_mean/input_std,
+                                     1/input_std)
+    cv2.imwrite(im_name, output_norm)
+
+
+
+best_PSNR = 0
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Voxel Flow')
@@ -98,7 +113,7 @@ def main():
         # evaluate on validation set
         if ((epoch + 1) % cfg.logging.eval_freq == 0
                 or epoch == cfg.train.optimizer.args.max_epoch - 1):
-            PSNR = validate(val_loader, model, optimizer, criterion, evaluator)
+            PSNR = validate(val_loader, model, optimizer, criterion, evaluator, epoch)
             # remember best PSNR and save checkpoint
             is_best = PSNR > best_PSNR
             best_PSNR = max(PSNR, best_PSNR)
@@ -176,7 +191,7 @@ def flip(x, dim):
     return x.view(xsize)
 
 
-def validate(val_loader, model, optimizer, criterion, evaluator):
+def validate(val_loader, model, optimizer, criterion, evaluator, epoch):
     with torch.no_grad():
         batch_time = AverageMeter()
         losses = AverageMeter()
@@ -217,12 +232,15 @@ def validate(val_loader, model, optimizer, criterion, evaluator):
                            batch_time=batch_time,
                            loss=losses,
                            PSNR=evaluator.PSNR())))
-
+                save_name = "output/" + str(epoch+1) + "_" + str(i+1) + ".jpg"
+                save_img(input.cpu().numpy(), target.cpu().numpy(), pred, save_name, model.input_mean, model.input_std)
+        '''
         print('Testing Results: '
               'PSNR {PSNR:.3f} ({bestPSNR:.4f})\tLoss {loss.avg:.5f}'.format(
                   PSNR=evaluator.PSNR(),
                   bestPSNR=max(evaluator.PSNR(), best_PSNR),
                   loss=losses))
+        '''
 
         return evaluator.PSNR()
 
