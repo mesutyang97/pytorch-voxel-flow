@@ -18,12 +18,16 @@ from core.utils import transforms as tf
 
 
 def save_img(input, target, pred, im_name, input_mean, input_std):
-    print("input size", input.shape)
-    print("target size", target.shape)
+    input1 = input[:3,:,:]
+    input2 = input[3:,:,:]
+    input_con = np.concatenate((input1, input2), axis=1)
     comparison = np.concatenate((target, pred), axis=1)
-    output = np.concatenate((input, comparison), axis=0)
-    output_norm = tf.normalize(output, -input_mean/input_std,
-                                     1/input_std)
+    output = np.concatenate((input_con, comparison), axis=2)
+    #output_norm = tf.normalize(output, -np.divide(input_mean,input_std).reshape((3, 1, 1)),
+    #                                 np.divide(1.0,input_std).reshape((3, 1, 1)))
+    output_norm = np.add(output, 1.0) * 0.5 * 255 
+    output_norm = np.transpose(output_norm, (1, 2, 0))
+    print("output_norm size", output_norm.shape)
     cv2.imwrite(im_name, output_norm)
 
 
@@ -74,7 +78,7 @@ def main():
         shuffle=False,
         num_workers=32,
         pin_memory=True)
-
+    print("len valodaer", len(val_loader))
     cfg.train.optimizer.args.max_iter = (
         cfg.train.optimizer.args.max_epoch * len(train_loader))
 
@@ -107,6 +111,7 @@ def main():
     # return
 
     for epoch in range(cfg.train.optimizer.args.max_epoch):
+        print("epoch", epoch)
 
         # train for one epoch
         train(train_loader, model, optimizer, criterion, epoch)
@@ -232,8 +237,10 @@ def validate(val_loader, model, optimizer, criterion, evaluator, epoch):
                            batch_time=batch_time,
                            loss=losses,
                            PSNR=evaluator.PSNR())))
-                save_name = "output/" + str(epoch+1) + "_" + str(i+1) + ".jpg"
-                save_img(input.cpu().numpy(), target.cpu().numpy(), pred, save_name, model.input_mean, model.input_std)
+                save_name = "outputs/" + str(epoch+1) + "_" + str(i+1) + ".jpg"
+                input_mean = [0.5 * 255, 0.5 * 255, 0.5 * 255]
+                input_std = [0.5 * 255, 0.5 * 255, 0.5 * 255]
+                save_img(input.cpu().numpy()[0], target.cpu().numpy()[0], pred[0], save_name, input_mean, input_std)
         '''
         print('Testing Results: '
               'PSNR {PSNR:.3f} ({bestPSNR:.4f})\tLoss {loss.avg:.5f}'.format(

@@ -52,4 +52,4 @@ test = dict(
 # Logging
 output_dir = 'outputs'
 snapshot_pref = 'voxelflow_finetune'
-logging = dict(log_dir='', print_freq=50, eval_freq=1)
+logging = dict(log_dir='', print_freq=1, eval_freq=1)
