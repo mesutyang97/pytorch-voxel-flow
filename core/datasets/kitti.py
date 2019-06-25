@@ -20,6 +20,7 @@ class Kitti(Dataset):
                 video_dir = line.rstrip().split(' ')[0]
                 frames_num = int(line.rstrip().split(' ')[1])
                 self.img_list.append((video_dir, frames_num))
+            print("img_list",self.img_list)
 
         if istrain:
             self.img_list = [i for i in self.img_list for _ in range(10)]
