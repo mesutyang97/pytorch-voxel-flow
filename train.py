@@ -78,7 +78,6 @@ def main():
         shuffle=False,
         num_workers=32,
         pin_memory=True)
-    print("len trainloader", len(train_loader))
     print("len valodaer", len(val_loader))
     cfg.train.optimizer.args.max_iter = (
         cfg.train.optimizer.args.max_epoch * len(train_loader))
