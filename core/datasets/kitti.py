@@ -22,7 +22,7 @@ class Kitti(Dataset):
                 self.img_list.append((video_dir, frames_num))
 
         if istrain:
-            self.img_list = [i for i in self.img_list for _ in range(10)]
+            self.img_list = [i for i in self.img_list for _ in range(100)]
 
         self.istrain = istrain
         self.img_path = '../' + dataset_path

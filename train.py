@@ -17,7 +17,7 @@ import cv2
 from core.utils import transforms as tf
 
 
-def save_img(input, target, pred, im_name, input_mean, input_std):
+def save_img(input, target, pred, im_name):
     input1 = input[:3,:,:]
     input2 = input[3:,:,:]
     input_con = np.concatenate((input1, input2), axis=1)
@@ -141,53 +141,50 @@ def train(train_loader, model, optimizer, criterion, epoch):
 
     end = time.time()
 
-    i = 0
 
-    for k in range(100):
-        for _, (input, target) in enumerate(train_loader):
-            # measure data loading time
-            data_time.update(time.time() - end)
+    for i, (input, target) in enumerate(train_loader):
+        # measure data loading time
+        data_time.update(time.time() - end)
 
-            lr = optimizer.adjust_learning_rate(epoch * len(train_loader) + i,
-                                                epoch)
+        lr = optimizer.adjust_learning_rate(epoch * len(train_loader) + i,
+                                            epoch)
 
-            target = target.cuda(async=True)
-            input_var = torch.autograd.Variable(input).cuda()
-            target_var = torch.autograd.Variable(target).cuda()
+        target = target.cuda(async=True)
+        input_var = torch.autograd.Variable(input).cuda()
+        target_var = torch.autograd.Variable(target).cuda()
 
-            # compute output
-            output = model(input_var)
-            loss = criterion(output, target_var)
+        # compute output
+        output = model(input_var)
+        loss = criterion(output, target_var)
 
-            # measure accuracy and record loss
-            losses.update(loss.item(), input.size(0))
+        # measure accuracy and record loss
+        losses.update(loss.item(), input.size(0))
 
-            # compute gradient and do SGD step
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        # compute gradient and do SGD step
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-            # measure elapsed time
-            batch_time.update(time.time() - end)
-            end = time.time()
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
 
-            if (i + 1) % cfg.logging.print_freq == 0:
-                print(('Epoch: [{0}][{1}/{2}], lr: {lr:.5f}\t'
-                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
-                           epoch,
-                           i,
-                           len(train_loader),
-                           batch_time=batch_time,
-                           data_time=data_time,
-                           loss=losses,
-                           lr=lr)))
-                batch_time.reset()
-                data_time.reset()
-                losses.reset()
+        if (i + 1) % cfg.logging.print_freq == 0:
+            print(('Epoch: [{0}][{1}/{2}], lr: {lr:.5f}\t'
+                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
+                       epoch,
+                       i,
+                       len(train_loader),
+                       batch_time=batch_time,
+                       data_time=data_time,
+                       loss=losses,
+                       lr=lr)))
+            batch_time.reset()
+            data_time.reset()
+            losses.reset()
 
-            i += 1
 
 
 def flip(x, dim):
@@ -212,51 +209,47 @@ def validate(val_loader, model, optimizer, criterion, evaluator, epoch):
         model.eval()
 
         end = time.time()
-        i = 0
-        for k in range(100):
-            for _, (input, target) in enumerate(val_loader):
-                target = target.cuda(async=True)
-                input_var = torch.autograd.Variable(input)
-                target_var = torch.autograd.Variable(target)
 
-                # compute output
-                output = model(input_var)
+        for i, (input, target) in enumerate(val_loader):
+            target = target.cuda(async=True)
+            input_var = torch.autograd.Variable(input)
+            target_var = torch.autograd.Variable(target)
 
-                loss = criterion(output, target_var)
+            # compute output
+            output = model(input_var)
 
-                # measure accuracy and record loss
+            loss = criterion(output, target_var)
 
-                pred = output.data.cpu().numpy()
-                evaluator(pred, target.cpu().numpy())
-                losses.update(loss.item(), input.size(0))
+            # measure accuracy and record loss
 
-                # measure elapsed time
-                batch_time.update(time.time() - end)
-                end = time.time()
+            pred = output.data.cpu().numpy()
+            evaluator(pred, target.cpu().numpy())
+            losses.update(loss.item(), input.size(0))
 
-                if (i + 1) % cfg.logging.print_freq == 0:
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
 
-                    print(('Test: [{0}/{1}]\t'
-                           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                           'PSNR {PSNR:.3f}'.format(
-                               i,
-                               len(val_loader),
-                               batch_time=batch_time,
-                               loss=losses,
-                               PSNR=evaluator.PSNR())))
-                    save_name = "outputs/" + str(epoch+1) + "_" + str(i+1) + ".jpg"
-                    input_mean = [0.5 * 255, 0.5 * 255, 0.5 * 255]
-                    input_std = [0.5 * 255, 0.5 * 255, 0.5 * 255]
-                    save_img(input.cpu().numpy()[0], target.cpu().numpy()[0], pred[0], save_name, input_mean, input_std)
-                i += 1
-            '''
-            print('Testing Results: '
-                  'PSNR {PSNR:.3f} ({bestPSNR:.4f})\tLoss {loss.avg:.5f}'.format(
-                      PSNR=evaluator.PSNR(),
-                      bestPSNR=max(evaluator.PSNR(), best_PSNR),
-                      loss=losses))
-            '''
+            if (i + 1) % cfg.logging.print_freq == 0:
+
+                print(('Test: [{0}/{1}]\t'
+                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                       'PSNR {PSNR:.3f}'.format(
+                           i,
+                           len(val_loader),
+                           batch_time=batch_time,
+                           loss=losses,
+                           PSNR=evaluator.PSNR())))
+                save_name = "outputs/" + str(epoch+1) + "_" + str(i+1) + ".jpg"
+                save_img(input.cpu().numpy()[0], target.cpu().numpy()[0], pred[0], save_name)
+
+        print('Testing Results: '
+              'PSNR {PSNR:.3f} ({bestPSNR:.4f})\tLoss {loss.avg:.5f}'.format(
+                  PSNR=evaluator.PSNR(),
+                  bestPSNR=max(evaluator.PSNR(), best_PSNR),
+                  loss=losses))
+
 
         return evaluator.PSNR()
 
